@@ -40,7 +40,8 @@ def sidebar_profiles():
     </div>
     <hr>
     """, unsafe_allow_html=True)
-
+# Add the profile section
+sidebar_profiles()
 def get_api_key():
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
@@ -241,9 +242,6 @@ with st.sidebar:
     
     if st.session_state.last_query_time:
         st.subheader("Performance")
-        # You don't need to toggle the debug mode again here
-        # Sidebar footer profile links
-        sidebar_profiles()
         # Main UI for file upload
         uploaded_file = st.file_uploader("Upload a PDF document", type="pdf")
         
@@ -294,10 +292,7 @@ with st.sidebar:
                 1. Upload a document
                 2. Ask a question
                 3. Optionally translate responses to other languages
-                """)
-                
-                # Add the profile section
-                sidebar_profiles()
+                """)                
 
 # Main content area
 col1, col2 = st.columns([2, 1])
