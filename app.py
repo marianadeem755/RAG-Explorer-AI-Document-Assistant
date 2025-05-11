@@ -332,7 +332,7 @@ with col1:
 with col2:
     language = st.selectbox("Language", ["English", "Urdu", "Hindi", "French", "Chinese", "Spanish", "German", "Arabic", "Russian"])
     language_codes = {
-        "English": "en", "Urdu": "ur", "Hindi": "hi", "French": "fr", "Chinese": "zh-cn",
+        "English": "en", "Urdu": "ur", "Hindi": "hi", "French": "fr", "Chinese": "zh-CN",
         "Spanish": "es", "German": "de", "Arabic": "ar", "Russian": "ru"
     }
     lang_code = language_codes[language]
