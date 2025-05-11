@@ -12,12 +12,15 @@ The RAG Document Assistant is an AI powered application that allows users to upl
 
 ## Installation
 1. **Install the required packages**:
-
-   ```
-   
+  ```
+   pip install -r requirements.txt
    ```
 2. **Set up your API key**:
-   - Obtain your API key from Groq and set it as an environment variable:
+   - Obtain your API key from Groq and set it as an environment variable
+3. **Run the app locally**:
+   ```
+   streamlit run app.py
+   ```
 ## Usage
 
 1. **Upload a Document**: Use the file uploader to upload a PDF or TXT document.
