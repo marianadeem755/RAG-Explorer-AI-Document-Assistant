@@ -7,20 +7,19 @@ import faiss
 import numpy as np
 import tiktoken
 import requests
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 from gtts import gTTS
 import time
-# Set page config for better appearance
+
 st.set_page_config(
     page_title="RAG Document Assistant",
     page_icon="📄",
     layout="wide",
     initial_sidebar_state="expanded"
 )
-print('---------------------------------')
-# Sidebar profile function
+
 def sidebar_profiles():
-    st.sidebar.markdown("""<hr>""", unsafe_allow_html=True)  # Add line before author name
+    st.sidebar.markdown("""<hr>""", unsafe_allow_html=True)
     st.sidebar.markdown("### 🎉Author: Maria Nadeem🌟")
     st.sidebar.markdown("### 🔗 Connect With Me")
     st.sidebar.markdown("""
@@ -42,32 +41,24 @@ def sidebar_profiles():
     <hr>
     """, unsafe_allow_html=True)
 
-
-# API Key Management with better error handling
 def get_api_key():
-    # First try to get from environment
     api_key = os.getenv("GROQ_API_KEY")
-    
-    # If not in environment, try to get from session state or let user input it
     if not api_key:
         if "GROQ_API_KEY" in st.session_state:
             api_key = st.session_state["GROQ_API_KEY"]
-    
     return api_key
 
-# Initialize session state variables if they don't exist
-if "chunks" not in st.session_state:
-    st.session_state.chunks = []
-if "chunk_sources" not in st.session_state:
-    st.session_state.chunk_sources = []
-if "debug_mode" not in st.session_state:
-    st.session_state.debug_mode = False
-if "last_query_time" not in st.session_state:
-    st.session_state.last_query_time = None
-if "last_response" not in st.session_state:
-    st.session_state.last_response = None
+# Session state initialization
+for key, default in {
+    "chunks": [],
+    "chunk_sources": [],
+    "debug_mode": False,
+    "last_query_time": None,
+    "last_response": None
+}.items():
+    if key not in st.session_state:
+        st.session_state[key] = default
 
-# Setup
 @st.cache_resource
 def load_embedder():
     return SentenceTransformer("all-MiniLM-L6-v2")
@@ -75,10 +66,8 @@ def load_embedder():
 embedder = load_embedder()
 embedding_dim = 384
 index = faiss.IndexFlatL2(embedding_dim)
-translator = Translator()
 tokenizer = tiktoken.get_encoding("cl100k_base")
 
-# Utilities
 def num_tokens_from_string(string: str) -> int:
     return len(tokenizer.encode(string))
 
@@ -88,11 +77,11 @@ def chunk_text(text, max_tokens=250):
     total_tokens = 0
     result_chunks = []
     for sentence in sentences:
-        if not sentence.strip():  # Skip empty sentences
+        if not sentence.strip():
             continue
         token_len = num_tokens_from_string(sentence)
         if total_tokens + token_len > max_tokens:
-            if current_chunk:  # Only add if there's content
+            if current_chunk:
                 result_chunks.append(". ".join(current_chunk) + ("." if not current_chunk[-1].endswith(".") else ""))
             current_chunk = [sentence]
             total_tokens = token_len
@@ -111,22 +100,19 @@ def extract_text_from_pdf(pdf_file):
     return text
 
 def index_uploaded_text(text):
-    # Reset the index and chunks
     global index
     index = faiss.IndexFlatL2(embedding_dim)
     st.session_state.chunks = []
     st.session_state.chunk_sources = []
-    
-    # Process text into chunks
+
     chunks_list = chunk_text(text)
     st.session_state.chunks = chunks_list
-    
-    # Create source references and vectors
+
     for i, chunk in enumerate(chunks_list):
         st.session_state.chunk_sources.append(f"Chunk {i+1}: {chunk[:50]}...")
         vector = embedder.encode([chunk])[0]
         index.add(np.array([vector]).astype('float32'))
-    
+
     return len(chunks_list)
 
 def retrieve_chunks(query, top_k=5):
@@ -139,29 +125,21 @@ def retrieve_chunks(query, top_k=5):
 def build_prompt(system_prompt, context_chunks, question):
     context = "\n\n".join(context_chunks)
     return f"""{system_prompt}
-
 Context:
 {context}
-
 Question:
 {question}
-
 Answer: Please provide a comprehensive answer based only on the context provided."""
 
 def generate_answer(prompt):
     api_key = get_api_key()
-    
     if not api_key:
         return "API key is missing. Please set the GROQ_API_KEY environment variable or enter it in the sidebar."
-    
     headers = {
-        "Authorization": f"Bearer {api_key.strip()}",  # Strip to remove any whitespace
+        "Authorization": f"Bearer {api_key.strip()}",
         "Content-Type": "application/json"
     }
-    
-    # Use the model selected by the user, default to llama3-8b if none selected
     selected_model = st.session_state.get("MODEL_CHOICE", "llama3-8b-8192")
-    
     payload = {
         "model": selected_model,
         "messages": [
@@ -171,7 +149,6 @@ def generate_answer(prompt):
         "temperature": 0.3,
         "max_tokens": 1024
     }
-    
     try:
         start_time = time.time()
         with st.spinner("Sending request to Groq API..."):
@@ -181,73 +158,41 @@ def generate_answer(prompt):
                 headers=headers,
                 timeout=30
             )
-        
         query_time = time.time() - start_time
         st.session_state.last_query_time = f"{query_time:.2f} seconds"
-        
-        # For debugging - show only status code when debug mode is enabled
-        if st.session_state.debug_mode:
-            st.write(f"API Response Status Code: {response.status_code}")
-            st.write(f"Response time: {query_time:.2f} seconds")
-        
+
         if response.status_code == 401:
-            return "Authentication failed: The API key appears to be invalid or expired. Please check your API key."
-        
+            return "Authentication failed: Invalid or expired API key."
         if response.status_code == 400:
-            # Display the detailed error for 400 Bad Request
             error_info = response.json().get("error", {})
             error_message = error_info.get("message", "Unknown error")
-            error_type = error_info.get("type", "Unknown type")
-            
-            # Try alternate model if model not found
-            if "model not found" in error_message.lower() or "model_not_found" in error_type.lower():
-                st.warning("Trying with an alternate model (llama3-8b-8192)...")
+            if "model not found" in error_message.lower():
+                st.warning("Trying with alternate model...")
                 payload["model"] = "llama3-8b-8192"
-                
-                response = requests.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    json=payload,
-                    headers=headers,
-                    timeout=30
-                )
-                
+                response = requests.post("https://api.groq.com/openai/v1/chat/completions", json=payload, headers=headers)
                 if response.status_code != 200:
-                    return f"Both model attempts failed. Please check the available models for your Groq API key. Error: {error_message}"
+                    return f"Both model attempts failed. Error: {error_message}"
             else:
                 return f"API Error: {error_message}"
-        
-        response.raise_for_status()  # Raises an HTTPError for other bad responses
-        
+        response.raise_for_status()
         response_json = response.json()
-            
-        if "choices" not in response_json:
-            error_msg = f"Unexpected API response format. Response: {response_json}"
-            if "error" in response_json:
-                error_msg = f"API Error: {response_json['error'].get('message', 'Unknown error')}"
-            st.error(error_msg)
-            return "Sorry, I couldn't retrieve an answer due to an API error."
-            
-        if not response_json["choices"]:
+        if "choices" not in response_json or not response_json["choices"]:
             return "No answer was generated."
-        
         answer = response_json["choices"][0]["message"]["content"]
         st.session_state.last_response = answer
         return answer
-        
     except requests.exceptions.RequestException as e:
-        st.error(f"API request failed: {str(e)}")
-        return f"Sorry, I couldn't connect to the API service. Error: {str(e)}"
+        return f"API request failed: {str(e)}"
     except Exception as e:
-        st.error(f"Unexpected error: {str(e)}")
-        return f"Sorry, something went wrong. Error: {str(e)}"
+        return f"Unexpected error: {str(e)}"
 
 def translate_text(text, target_language):
     try:
         with st.spinner(f"Translating to {target_language}..."):
-            return translator.translate(text, dest=target_language).text
+            return GoogleTranslator(source='auto', target=target_language).translate(text)
     except Exception as e:
         st.error(f"Translation failed: {str(e)}")
-        return text  # Return original text if translation fails
+        return text
 
 def text_to_speech(text, lang_code):
     try:
@@ -259,7 +204,6 @@ def text_to_speech(text, lang_code):
     except Exception as e:
         st.error(f"Text-to-speech failed: {str(e)}")
         return None
-
 # Streamlit UI
 st.title("📄 Task-Specific RAG Assistant")
 st.markdown("Upload a document and ask questions to get AI-powered answers with translation capabilities.")
@@ -297,18 +241,67 @@ with st.sidebar:
     
     if st.session_state.last_query_time:
         st.subheader("Performance")
-        st.info(f"Last query time: {st.session_state.last_query_time}")
-    
-    st.subheader("About")
-    st.markdown("""
-    This app uses Retrieval-Augmented Generation (RAG) to answer questions about uploaded documents.
-    1. Upload a document
-    2. Ask a question
-    3. Optionally translate responses to other languages
-    """)
-    
-    # Add the profile section
-    sidebar_profiles()
+        st.session_state.debug_mode = st.checkbox(
+            "Show Debug Information", 
+            value=st.session_state.debug_mode
+        )
+        # Sidebar footer profile links
+        sidebar_profiles()
+        
+        # Main UI for file upload
+        uploaded_file = st.file_uploader("Upload a PDF document", type="pdf")
+        
+        if uploaded_file:
+            text = extract_text_from_pdf(uploaded_file)
+            chunk_count = index_uploaded_text(text)
+            st.success(f"Indexed {chunk_count} text chunks from the uploaded PDF.")
+        
+            # User query input
+            question = st.text_input("Ask a question based on the document")
+        
+            if question:
+                context_chunks = retrieve_chunks(question)
+                system_prompt = "You are a helpful assistant answering only from the document context provided."
+                prompt = build_prompt(system_prompt, context_chunks, question)
+                answer = generate_answer(prompt)
+                
+                # Show response
+                st.markdown("### 💬 AI Answer")
+                st.write(answer)
+                
+                # Optional: Translate
+                translate_option = st.selectbox("Translate the answer to", ["None", "Urdu", "Hindi", "Spanish", "French"])
+                language_codes = {
+                    "Urdu": "ur",
+                    "Hindi": "hi",
+                    "Spanish": "es",
+                    "French": "fr"
+                }
+        
+                if translate_option != "None":
+                    translated_text = GoogleTranslator(source='auto', target='fr').translate(text)
+                    st.markdown(f"### 🌐 Translated Answer ({translate_option})")
+                    st.write(translated_text)
+        
+                    # Audio playback
+                    audio_file_path = text_to_speech(translated_text, language_codes.get(translate_option, "en"))
+                    if audio_file_path:
+                        st.audio(audio_file_path, format="audio/mp3")
+
+            elif uploaded_file is None:
+                st.info("Please upload a PDF document to begin.")
+            
+                
+                st.subheader("About")
+                st.markdown("""
+                This app uses Retrieval-Augmented Generation (RAG) to answer questions about uploaded documents.
+                1. Upload a document
+                2. Ask a question
+                3. Optionally translate responses to other languages
+                """)
+                
+                # Add the profile section
+                sidebar_profiles()
 
 # Main content area
 col1, col2 = st.columns([2, 1])
