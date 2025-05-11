@@ -1,0 +1,8 @@
+streamlit
+requests
+sentence-transformers
+faiss-cpu
+gTTS
+googletrans
+python-dotenv
+tiktoken
