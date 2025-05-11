@@ -292,7 +292,7 @@ with st.sidebar:
                 1. Upload a document
                 2. Ask a question
                 3. Optionally translate responses to other languages
-                """)                
+                """)
 
 # Main content area
 col1, col2 = st.columns([2, 1])
