@@ -243,12 +243,7 @@ with st.sidebar:
         st.subheader("Performance")
         # You don't need to toggle the debug mode again here
         # Sidebar footer profile links
-        sidebar_profiles()
-
-        
-        # Main UI for file upload
-        uploaded_file = st.file_uploader("Upload a PDF document", type="pdf")
-        
+        sidebar_profiles()        
         if uploaded_file:
             text = extract_text_from_pdf(uploaded_file)
             chunk_count = index_uploaded_text(text)
@@ -287,7 +282,7 @@ with st.sidebar:
                         st.audio(audio_file_path, format="audio/mp3")
 
             elif uploaded_file is None:
-                st.info("Please upload a PDF document to begin.")
+                st.info("Please  to begin.")
             
                 
                 st.subheader("About")
