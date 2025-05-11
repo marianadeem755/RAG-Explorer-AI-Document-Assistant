@@ -1,8 +1,9 @@
 streamlit
-requests
+PyMuPDF
 sentence-transformers
 faiss-cpu
-gTTS
-googletrans
-python-dotenv
 tiktoken
+requests
+deep-translator
+gTTS
+python-dotenv
