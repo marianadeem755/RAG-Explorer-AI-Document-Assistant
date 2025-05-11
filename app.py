@@ -241,12 +241,10 @@ with st.sidebar:
     
     if st.session_state.last_query_time:
         st.subheader("Performance")
-        st.session_state.debug_mode = st.checkbox(
-            "Show Debug Information", 
-            value=st.session_state.debug_mode
-        )
+        # You don't need to toggle the debug mode again here
         # Sidebar footer profile links
         sidebar_profiles()
+
         
         # Main UI for file upload
         uploaded_file = st.file_uploader("Upload a PDF document", type="pdf")
