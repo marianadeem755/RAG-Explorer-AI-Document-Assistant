@@ -205,7 +205,7 @@ def text_to_speech(text, lang_code):
         st.error(f"Text-to-speech failed: {str(e)}")
         return None
 # Streamlit UI
-st.title("📄 Task-Specific RAG Assistant")
+st.title("📄 RAG Explorer:  AI-Powered Document Assistant")
 st.markdown("Upload a document and ask questions to get AI-powered answers with translation capabilities.")
 
 # Add API key input in sidebar
