@@ -303,7 +303,36 @@ with col1:
             
             # Display document preview
             with st.expander("Document Preview"):
-                st.text_area("First 1000 characters of document", raw_text[:20000], height=200)
+                st.text_area("Display Document preview", raw_text[:20000], height=200)
+                
+                # Extract and display key points
+                st.subheader("Key Points")
+                
+                # Simple algorithm to extract potential key points (sentences that might be important)
+                sentences = raw_text.split('. ')
+                key_points = []
+                
+                # Look for sentences that might be key points (contains keywords, not too long/short)
+                for sentence in sentences[:50]:  # Check first 50 sentences
+                    sentence = sentence.strip()
+                    if len(sentence) > 15 and len(sentence) < 200:  # Reasonable length for a key point
+                        # Keywords that might indicate important information
+                        important_keywords = ["important", "key", "significant", "main", "primary", "essential", 
+                                             "critical", "crucial", "fundamental", "major", "summary", "conclusion"]
+                        
+                        if any(keyword in sentence.lower() for keyword in important_keywords) or sentence.endswith(':'):
+                            key_points.append(sentence)
+                
+                # If we didn't find obvious key points, just take some representative sentences
+                if len(key_points) < 3:
+                    key_points = [s.strip() for s in sentences[:50:10] if len(s.strip()) > 15][:5]  # Every 10th sentence from first 50
+                
+                # Display the key points as bullets
+                for point in key_points[:5]:  # Show up to 5 key points
+                    st.markdown(f"• {point}")
+                
+                if not key_points:
+                    st.info("No clear key points detected. Try exploring the full document."))
 
 with col2:
     if st.session_state.chunks:
