@@ -209,11 +209,7 @@ st.title("📄 RAG Explorer:  AI-Powered Document Assistant")
 st.markdown("Upload a document and ask questions to get AI-powered answers with translation capabilities.")
 
 # Add API key input in sidebar
-with st.sidebar:
-    st.header("API Configuration")
-    # Remove the API key input field
-    st.info("Using Groq API key from environment variables")
-    
+with st.sidebar:    
     # Add model selection
     st.subheader("Model Selection")
     model_choice = st.selectbox(
