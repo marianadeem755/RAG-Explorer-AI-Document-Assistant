@@ -45,8 +45,7 @@ sidebar_profiles()
 def get_api_key():
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
-        if "GROQ_API_KEY" in st.session_state:
-            api_key = st.session_state["GROQ_API_KEY"]
+        st.error("GROQ_API_KEY environment variable is not set. Please set it before running the application.")
     return api_key
 
 # Session state initialization
@@ -212,16 +211,21 @@ st.markdown("Upload a document and ask questions to get AI-powered answers with 
 # Add API key input in sidebar
 with st.sidebar:
     st.header("API Configuration")
-    api_key_input = st.text_input(
-        "Groq API Key", 
-        value=get_api_key() or "", 
-        type="password",
-        help="Enter your Groq API key here if not set as environment variable"
+    # Remove the API key input field
+    st.info("Using Groq API key from environment variables")
+    
+    # Add model selection
+    st.subheader("Model Selection")
+    model_choice = st.selectbox(
+        "Select LLM Model",
+        [
+            "llama3-8b-8192",  # Changed default to a model known to work
+            "llama3-70b-8192"
+        ],
+        help="Choose the Groq model to use for answering questions"
     )
     
-    if api_key_input:
-        st.session_state["GROQ_API_KEY"] = api_key_input
-        st.success("API key saved for this session!")
+    st.session_state["MODEL_CHOICE"] = model_choice
     
     # Add model selection
     st.subheader("Model Selection")
