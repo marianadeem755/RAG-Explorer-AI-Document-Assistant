@@ -227,19 +227,6 @@ with st.sidebar:
     
     st.session_state["MODEL_CHOICE"] = model_choice
     
-    # Add model selection
-    st.subheader("Model Selection")
-    model_choice = st.selectbox(
-        "Select LLM Model",
-        [
-            "llama3-8b-8192",  # Changed default to a model known to work
-            "llama3-70b-8192"
-        ],
-        help="Choose the Groq model to use for answering questions"
-    )
-    
-    st.session_state["MODEL_CHOICE"] = model_choice
-    
     # Debug mode toggle
     st.subheader("Debug Settings")
     st.session_state.debug_mode = st.checkbox("Show Debug Information", value=st.session_state.debug_mode)
