@@ -232,58 +232,14 @@ with st.sidebar:
     st.session_state.debug_mode = st.checkbox("Show Debug Information", value=st.session_state.debug_mode)
     
     if st.session_state.last_query_time:
-        st.subheader("Performance")
-        # Main UI for file upload
-        uploaded_file = st.file_uploader("Upload a PDF document", type="pdf")
-        
-        if uploaded_file:
-            text = extract_text_from_pdf(uploaded_file)
-            chunk_count = index_uploaded_text(text)
-            st.success(f"Indexed {chunk_count} text chunks from the uploaded PDF.")
-        
-            # User query input
-            question = st.text_input("Ask a question based on the document")
-        
-            if question:
-                context_chunks = retrieve_chunks(question)
-                system_prompt = "You are a helpful assistant answering only from the document context provided."
-                prompt = build_prompt(system_prompt, context_chunks, question)
-                answer = generate_answer(prompt)
+         st.subheader("About")
+         st.markdown("""
+         This app uses Retrieval-Augmented Generation (RAG) to answer questions about uploaded documents.
+         1. Upload a document
+         2. Ask a question
+         3. Optionally translate responses to other languages
+         """)
                 
-                # Show response
-                st.markdown("### 💬 AI Answer")
-                st.write(answer)
-                
-                # Optional: Translate
-                translate_option = st.selectbox("Translate the answer to", ["None", "Urdu", "Hindi", "Spanish", "French"])
-                language_codes = {
-                    "Urdu": "ur",
-                    "Hindi": "hi",
-                    "Spanish": "es",
-                    "French": "fr"
-                }
-        
-                if translate_option != "None":
-                    translated_text = GoogleTranslator(source='auto', target='fr').translate(text)
-                    st.markdown(f"### 🌐 Translated Answer ({translate_option})")
-                    st.write(translated_text)
-        
-                    # Audio playback
-                    audio_file_path = text_to_speech(translated_text, language_codes.get(translate_option, "en"))
-                    if audio_file_path:
-                        st.audio(audio_file_path, format="audio/mp3")
-
-            elif uploaded_file is None:
-                st.info("Please upload a PDF document to begin.")
-            
-                
-                st.subheader("About")
-                st.markdown("""
-                This app uses Retrieval-Augmented Generation (RAG) to answer questions about uploaded documents.
-                1. Upload a document
-                2. Ask a question
-                3. Optionally translate responses to other languages
-                """)
 
 # Main content area
 col1, col2 = st.columns([2, 1])
