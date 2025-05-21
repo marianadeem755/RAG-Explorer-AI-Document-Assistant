@@ -233,7 +233,7 @@ with st.sidebar:
          This app uses Retrieval-Augmented Generation (RAG) to answer questions about uploaded documents.
          1. Upload a document
          2. Ask a question
-         3. Optionally translate responses to other languages
+         3. Translate responses to other languages
          """)
                 
 
