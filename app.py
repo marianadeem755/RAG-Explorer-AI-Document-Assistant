@@ -302,9 +302,7 @@ with col1:
             st.success(f"Document indexed successfully! Created {total_chunks} chunks.")
             
             # Display document preview
-            with st.expander("Document Preview"):
-                st.text_area("Display Document preview", raw_text[:20000], height=200)
-                
+            with st.expander("Document Preview"):          
                 # Extract and display key points
                 st.subheader("Key Points")
                 
