@@ -332,7 +332,7 @@ with col1:
                     st.markdown(f"• {point}")
                 
                 if not key_points:
-                    st.info("No clear key points detected. Try exploring the full document."))
+                    st.info("No clear key points detected. Try exploring the full document.")
 
 with col2:
     if st.session_state.chunks:
