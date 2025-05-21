@@ -337,6 +337,7 @@ with col2:
         st.info(f"Document chunks: {len(st.session_state.chunks)}")
 
 # Query and answer section
+# Query and answer section
 st.divider()
 query = st.text_input("Ask a question about the document")
 
@@ -355,7 +356,11 @@ with col2:
     }
     lang_code = language_codes[language]
 
-if query:
+# Add a submit button
+submit_button = st.button("Get Answer", type="primary", key="submit_query")
+
+# Only process when the button is clicked and there's a query
+if submit_button and query:
     if index.ntotal == 0:
         st.warning("Please upload and index a document first.")
     else:
