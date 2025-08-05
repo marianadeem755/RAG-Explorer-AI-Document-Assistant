@@ -12,7 +12,7 @@ from gtts import gTTS
 import time
 
 st.set_page_config(
-    page_title="RAG Document Assistant",
+    page_title="RAG-Explorer-AI-Document-Assistant",
     page_icon="📄",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -139,7 +139,7 @@ def generate_answer(prompt):
         "Authorization": f"Bearer {api_key.strip()}",
         "Content-Type": "application/json"
     }
-    selected_model = st.session_state.get("MODEL_CHOICE", "llama3-8b-8192")
+    selected_model = st.session_state.get("MODEL_CHOICE", "llama-3.1-8b-instant")
     payload = {
         "model": selected_model,
         "messages": [
@@ -168,7 +168,7 @@ def generate_answer(prompt):
             error_message = error_info.get("message", "Unknown error")
             if "model not found" in error_message.lower():
                 st.warning("Trying with alternate model...")
-                payload["model"] = "llama3-8b-8192"
+                payload["model"] = "llama-3.1-8b-instant"
                 response = requests.post("https://api.groq.com/openai/v1/chat/completions", json=payload, headers=headers)
                 if response.status_code != 200:
                     return f"Both model attempts failed. Error: {error_message}"
@@ -215,8 +215,8 @@ with st.sidebar:
     model_choice = st.selectbox(
         "Select LLM Model",
         [
-            "llama3-8b-8192",  # Changed default to a model known to work
-            "llama3-70b-8192"
+            "llama-3.1-8b-instant",  # Changed default to a model known to work
+            "llama-3.3-70b-versatile"
         ],
         help="Choose the Groq model to use for answering questions"
     )
@@ -369,4 +369,4 @@ if submit_button and query:
 
 # Add footer
 st.divider()
-st.caption("RAG Document Assistant - Powered by Groq & Sentence Transformers")
+st.caption("RAG-Explorer-AI-Document-Assistant - Powered by Groq & Sentence Transformers")
